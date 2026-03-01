@@ -29,7 +29,6 @@
             <p>Will Power: <span id="stat-willpower">1</span></p>
             <p>Intelligence: <span id="stat-intelligence">1</span></p>
             <hr>
-            <p>Shields: <span id="hero-shields">0</span></p>
         </div>
 
         <!-- Habits (Quests) Section -->
@@ -44,6 +43,7 @@
                         <option value="1.0">Small Win</option>
                         <option value="1.5">Mid Win</option>
                         <option value="2.0">Big Win</option>
+                        <option value="shield">Use a Shield</option>
                     </select>
                 </div>
             </div>
@@ -55,6 +55,7 @@
                         <option value="1.0">Small Win</option>
                         <option value="1.5">Mid Win</option>
                         <option value="2.0">Big Win</option>
+                        <option value="shield">Use a Shield</option>
                     </select>
                 </div>
             </div>
@@ -66,6 +67,7 @@
                         <option value="1.0">Small Win</option>
                         <option value="1.5">Mid Win</option>
                         <option value="2.0">Big Win</option>
+                        <option value="shield">Use a Shield</option>
                     </select>
                 </div>
             </div>
@@ -77,6 +79,7 @@
                         <option value="1.0">Small Win</option>
                         <option value="1.5">Mid Win</option>
                         <option value="2.0">Big Win</option>
+                        <option value="shield">Use a Shield</option>
                     </select>
                 </div>
             </div>
@@ -88,6 +91,7 @@
                         <option value="1.0">Small Win</option>
                         <option value="1.5">Mid Win</option>
                         <option value="2.0">Big Win</option>
+                        <option value="shield">Use a Shield</option>
                     </select>
                 </div>
             </div>
@@ -96,7 +100,11 @@
 
         <!-- Rewards Section -->
         <div class="section" id="rewards-section">
-            <h2>Rewards & Inventory</h2>
+            <h2>Inventory & Rewards</h2>
+            <div class="inventory-item">
+                <span>Shields: <span id="hero-shields-inventory">0</span></span>
+            </div>
+            <hr>
             <div class="inventory-item">
                 <span>Lucky Box (White): <span id="box-white-count">0</span></span>
                 <button class="open-box-btn" data-color="white">Open</button>
@@ -125,6 +133,14 @@
             <h2>Current Boss</h2>
             <p>Name: <span id="boss-name">Procrastination Dragon</span></p>
             <p>HP: <span id="boss-hp">200</span></p>
+        </div>
+
+        <!-- Weekly Boss Section -->
+        <div class="section" id="weekly-boss-section">
+            <h2>Weekly Boss</h2>
+            <p>Name: <span id="weekly-boss-name">Weekly Griffin</span></p>
+            <p>HP: <span id="weekly-boss-hp">150</span></p>
+            <p>Weakness: <strong id="weekly-boss-weakness">VITALITY</strong></p>
         </div>
     </div>
 

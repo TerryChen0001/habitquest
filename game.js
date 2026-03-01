@@ -1,3 +1,61 @@
+// This is the correct, final version of game.js as of the latest request.
+
+document.addEventListener('DOMContentLoaded', () => {
+    // --- DOM ELEMENTS ---
+    const heroLevelEl = document.getElementById('hero-level');
+    const heroXpEl = document.getElementById('hero-xp');
+    const xpToNextLevelEl = document.getElementById('xp-to-next-level');
+    const heroShieldsInventoryEl = document.getElementById('hero-shields-inventory');
+
+    const statVitalityEl = document.getElementById('stat-vitality');
+    const statAgilityEl = document.getElementById('stat-agility');
+    const statStrengthEl = document.getElementById('stat-strength');
+    const statWillpowerEl = document.getElementById('stat-willpower');
+    const statIntelligenceEl = document.getElementById('stat-intelligence');
+
+    const habitVitalitySelect = document.getElementById('habit-vitality');
+    const habitAgilitySelect = document.getElementById('habit-agility');
+    const habitStrengthSelect = document.getElementById('habit-strength');
+    const habitWillpowerSelect = document.getElementById('habit-willpower');
+    const habitIntelligenceSelect = document.getElementById('habit-intelligence');
+
+    const bossNameEl = document.getElementById('boss-name');
+    const bossHpEl = document.getElementById('boss-hp');
+
+    const commitDayButton = document.getElementById('commit-day-button');
+    const specialDayInfoEl = document.getElementById('special-day-info');
+    const floorEl = document.getElementById('floor');
+    const monthlyThemeEl = document.getElementById('monthly-theme');
+    
+    const boxWhiteCountEl = document.getElementById('box-white-count');
+    const boxGreenCountEl = document.getElementById('box-green-count');
+    const boxBlueCountEl = document.getElementById('box-blue-count');
+    const doubleXpCountEl = document.getElementById('double-xp-count');
+    const levelupCountEl = document.getElementById('levelup-count');
+    
+    const weeklyBossNameEl = document.getElementById('weekly-boss-name');
+    const weeklyBossHpEl = document.getElementById('weekly-boss-hp');
+    const weeklyBossWeaknessEl = document.getElementById('weekly-boss-weakness');
+
+    // --- GAME DATA ---
+    let gameData = {};
+
+    // --- CONSTANTS ---
+    const ATTRIBUTES = ["vitality", "agility", "strength", "willpower", "intelligence"];
+    const BOSSES = [
+        { name: "Slime of Sloth", hp: 150 },
+        { name: "Goblin of Gluttony", hp: 200 },
+        { name: "Middle Boss: The Doubt Demon", hp: 200, isMiddleBoss: true },
+        { name: "Wraith of Laziness", hp: 300 },
+        { name: "Big Boss: The Procrastination Dragon", hp: 500, isBigBoss: true }
+    ];
+
+    const MONTHLY_THEMES = [
+        { month: 1, theme: "Vitality", attribute: "vitality" },
+        { month: 2, theme: "Agility", attribute: "agility" },
+        { month: 3, theme: "Strength", attribute: "strength" },
+    ];
+
     const defaultGameData = {
         hero: {
             level: 1,
@@ -16,8 +74,15 @@
             name: BOSSES[0].name,
             hp: BOSSES[0].hp
         },
+        weeklyBoss: {
+            name: "Weekly Griffin",
+            hp: 150,
+            maxHp: 150,
+            weakness: "vitality",
+            isDefeated: false
+        },
         lastLogin: null,
-        loginDaysThisMonth: 0
+        lastWeekNumber: 0
     };
 
     // --- CORE FUNCTIONS ---
@@ -26,8 +91,7 @@
         d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
         d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
         var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-        var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
-        return weekNo;
+        return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
     }
 
     function getXpForNextLevel(level) { return 50; }
@@ -44,15 +108,30 @@
         }
         if (!gameData.hero.inventory.boxes) gameData.hero.inventory.boxes = { white: 10, green: 0, blue: 0 };
         if (gameData.hero.inventory.levelUp === undefined) gameData.hero.inventory.levelUp = 0;
-        gameData.currentFloor = getWeekNumber(new Date());
+        if (!gameData.weeklyBoss) gameData.weeklyBoss = JSON.parse(JSON.stringify(defaultGameData.weeklyBoss));
+
+        const currentWeek = getWeekNumber(new Date());
+        gameData.currentFloor = currentWeek;
+        if (gameData.lastWeekNumber !== currentWeek) {
+            gameData.lastWeekNumber = currentWeek;
+            spawnNewWeeklyBoss();
+        }
+    }
+    
+    function spawnNewWeeklyBoss() {
+        gameData.weeklyBoss.hp = gameData.weeklyBoss.maxHp;
+        gameData.weeklyBoss.isDefeated = false;
+        const randomWeakness = ATTRIBUTES[Math.floor(Math.random() * ATTRIBUTES.length)];
+        gameData.weeklyBoss.weakness = randomWeakness;
+        alert(`A new Weekly Boss has appeared! The ${gameData.weeklyBoss.name} is weak to ${randomWeakness.toUpperCase()} this week!`);
     }
 
     function updateUI() {
-        const { hero, boss, currentFloor } = gameData;
+        const { hero, boss, weeklyBoss, currentFloor } = gameData;
         heroLevelEl.textContent = hero.level;
         heroXpEl.textContent = hero.xp;
         xpToNextLevelEl.textContent = getXpForNextLevel(hero.level);
-        heroShieldsEl.textContent = hero.inventory.shields;
+        heroShieldsInventoryEl.textContent = hero.inventory.shields;
 
         for(const stat in hero.stats) {
             document.getElementById(`stat-${stat}`).textContent = hero.stats[stat];
@@ -61,6 +140,10 @@
         bossNameEl.textContent = boss.name;
         bossHpEl.textContent = boss.hp;
         floorEl.textContent = currentFloor;
+        
+        weeklyBossNameEl.textContent = weeklyBoss.name;
+        weeklyBossHpEl.textContent = weeklyBoss.isDefeated ? "DEFEATED" : weeklyBoss.hp;
+        weeklyBossWeaknessEl.textContent = weeklyBoss.weakness.toUpperCase();
 
         const today = new Date();
         const dayOfWeek = today.getDay();
@@ -70,7 +153,7 @@
         
         let specialMessage = "Today is a normal day.";
         if (dayOfWeek === 0) specialMessage = "It's Sunday! You've earned a Weekly Lucky Box (White)!";
-        if (dayOfWeek === 1) specialMessage = "It's Log-in Day! Rewards are doubled.";
+        if (dayOfWeek === 1) specialMessage = "It's Log-in Day! +1 Shield.";
         if (dayOfWeek === 3) specialMessage = "It's Critical Hit Day! A random habit may get a surprise boost!";
         if (dayOfWeek === 5) specialMessage = "It's Surprising Day! You've earned a Lucky Box (White)!";
         specialDayInfoEl.textContent = specialMessage;
@@ -85,17 +168,14 @@
     function advanceToNextBoss() {
         gameData.currentBossIndex++;
         if (gameData.currentBossIndex >= BOSSES.length) {
-            alert("You have defeated all the bosses!");
+            alert("You have defeated all the main bosses!");
             gameData.currentBossIndex = BOSSES.length - 1;
         }
         const newBoss = BOSSES[gameData.currentBossIndex];
         gameData.boss.name = newBoss.name;
         gameData.boss.hp = newBoss.hp;
-        
-        let boxColor = 'green';
-        let boxQuantity = 1;
+        let boxColor = 'green', boxQuantity = 1;
         if (newBoss.isBigBoss) boxQuantity = 3;
-        
         alert(`Victory! A new foe appears: ${newBoss.name}! You earned ${boxQuantity} ${boxColor} box(es).`);
         addBoxToInventory(boxColor, boxQuantity);
     }
@@ -110,9 +190,8 @@
             gameData.lastLogin = todayStr;
             gameData.hero.inventory.shields++;
             alert("Daily Login Bonus! You get 1 shield!");
-
             const dayOfWeek = new Date().getDay();
-            if (dayOfWeek === 5 || dayOfWeek === 0) { // Friday or Sunday still grant a box
+            if (dayOfWeek === 5 || dayOfWeek === 0) {
                 alert("You've earned a Lucky Box (White)!");
                 addBoxToInventory('white', 1);
             }
@@ -176,23 +255,55 @@
             { el: habitIntelligenceSelect, weight: 6, name: "Intelligence", attribute: "intelligence" }
         ];
 
+        habitSelections.forEach(habit => {
+            if (habit.el.value === 'shield') {
+                if (gameData.hero.inventory.shields > 0) {
+                    gameData.hero.inventory.shields--;
+                    habit.el.dataset.value = "2.0"; // temp store value
+                } else {
+                    alert(`You are out of shields! The ${habit.name} habit will not count.`);
+                    habit.el.dataset.value = "0";
+                }
+            } else {
+                habit.el.dataset.value = habit.el.value;
+            }
+        });
+        
         if (new Date().getDay() === 3) {
             const randomIndex = Math.floor(Math.random() * 5);
             const randomHabit = habitSelections[randomIndex];
-            if (parseFloat(randomHabit.el.value) > 0) {
-                let newValue = parseFloat(randomHabit.el.value) + 0.5;
+            let currentValue = parseFloat(randomHabit.el.dataset.value);
+            if (currentValue > 0) {
+                let newValue = currentValue + 0.5;
                 if (newValue > 2.0) newValue = 2.0;
-                randomHabit.el.value = newValue.toString();
+                randomHabit.el.dataset.value = newValue.toString();
                 alert(`Critical Hit! Your ${randomHabit.name} effort was boosted!`);
             }
         }
-        const damageDealt = habitSelections.reduce((acc, habit) => acc + (habit.weight * parseFloat(habit.el.value)), 0);
-        gameData.boss.hp -= damageDealt;
+
+        let totalDamage = 0;
+        let weeklyBossDamage = 0;
+        habitSelections.forEach(habit => {
+            const value = parseFloat(habit.el.dataset.value);
+            let damage = habit.weight * value;
+            totalDamage += damage;
+
+            if (habit.attribute === gameData.weeklyBoss.weakness) {
+                weeklyBossDamage += damage * 3;
+            } else {
+                weeklyBossDamage += damage;
+            }
+        });
         
+        gameData.boss.hp -= totalDamage;
+        if (!gameData.weeklyBoss.isDefeated) {
+            gameData.weeklyBoss.hp -= weeklyBossDamage;
+        }
+
         const theme = MONTHLY_THEMES.find(t => t.month === (new Date().getMonth() + 1));
         let xpGained = habitSelections.reduce((acc, habit) => {
             let xp = 0;
-            if(parseFloat(habit.el.value) > 0) {
+            if(parseFloat(habit.el.dataset.value) > 0) {
                 xp = 5;
                 if (theme && theme.attribute === habit.attribute) xp *= 2;
             }
@@ -215,11 +326,24 @@
             alert(`Congratulations! You've reached Level ${gameData.hero.level}!`);
         }
         
-        alert(`You dealt ${damageDealt} damage to the boss and gained ${xpGained} XP!`);
+        alert(`You dealt ${totalDamage} damage to the Main Boss and ${weeklyBossDamage} damage to the Weekly Boss. You gained ${xpGained} XP!`);
+        
         if (gameData.boss.hp <= 0) {
             gameData.boss.hp = 0;
             advanceToNextBoss();
         }
+        
+        if (gameData.weeklyBoss.hp <= 0 && !gameData.weeklyBoss.isDefeated) {
+            gameData.weeklyBoss.isDefeated = true;
+            alert(`Congratulations! You have defeated the Weekly Boss and earned a Green Box!`);
+            addBoxToInventory('green', 1);
+        }
+        
+        // Reset dropdowns
+        habitSelections.forEach(habit => {
+            habit.el.value = "0";
+        });
+
         saveData();
         updateUI();
     }
