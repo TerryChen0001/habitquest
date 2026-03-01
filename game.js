@@ -152,8 +152,8 @@ document.addEventListener('DOMContentLoaded', () => {
         monthlyThemeEl.textContent = theme ? `This month's theme: ${theme.theme} (XP * 2)` : "No theme this month.";
         
         let specialMessage = "Today is a normal day.";
-        if (dayOfWeek === 0) specialMessage = "It's Sunday! You've earned a Weekly Lucky Box (White)!";
-        if (dayOfWeek === 1) specialMessage = "It's Log-in Day! +1 Shield.";
+        if (dayOfWeek === 0) specialMessage = "It's Beginning Day! You get 5 Shields!";
+        if (dayOfWeek === 1) specialMessage = "It's Log-in Day! Login reward is doubled!";
         if (dayOfWeek === 3) specialMessage = "It's Critical Hit Day! A random habit may get a surprise boost!";
         if (dayOfWeek === 5) specialMessage = "It's Surprising Day! You've earned a Lucky Box (White)!";
         specialDayInfoEl.textContent = specialMessage;
@@ -188,11 +188,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const todayStr = getTodayString();
         if (gameData.lastLogin !== todayStr) {
             gameData.lastLogin = todayStr;
-            gameData.hero.inventory.shields++;
-            alert("Daily Login Bonus! You get 1 shield!");
             const dayOfWeek = new Date().getDay();
-            if (dayOfWeek === 5 || dayOfWeek === 0) {
-                alert("You've earned a Lucky Box (White)!");
+            let shieldReward = 1;
+            
+            if (dayOfWeek === 0) { // Sunday
+                shieldReward = 5;
+                alert("It's Beginning Day! You get 5 Shields!");
+            } else if (dayOfWeek === 1) { // Monday
+                shieldReward = 2;
+                alert("It's Log-in Day! You get 2 Shields!");
+            } else {
+                alert("Daily Login Bonus! You get 1 shield!");
+            }
+            gameData.hero.inventory.shields += shieldReward;
+            
+            if (dayOfWeek === 5) { // Friday
+                alert("It's Surprising Day! You've earned a Lucky Box (White)!");
                 addBoxToInventory('white', 1);
             }
             saveData();
