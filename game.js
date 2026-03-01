@@ -26,6 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const specialDayInfoEl = document.getElementById('special-day-info');
     const floorEl = document.getElementById('floor');
     const monthlyThemeEl = document.getElementById('monthly-theme');
+    
+    const boxWhiteCountEl = document.getElementById('box-white-count');
+    const boxGreenCountEl = document.getElementById('box-green-count');
+    const boxBlueCountEl = document.getElementById('box-blue-count');
+    const doubleXpCountEl = document.getElementById('double-xp-count');
+    const levelupCountEl = document.getElementById('levelup-count');
 
     // --- GAME DATA ---
     let gameData = {};
@@ -34,32 +40,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const BOSSES = [
         { name: "Slime of Sloth", hp: 150 },
         { name: "Goblin of Gluttony", hp: 200 },
-        { name: "Middle Boss: The Doubt Demon", hp: 200, isMiddleBoss: true }, // Feb week 2
+        { name: "Middle Boss: The Doubt Demon", hp: 200, isMiddleBoss: true },
         { name: "Wraith of Laziness", hp: 300 },
-        { name: "Big Boss: The Procrastination Dragon", hp: 500, isBigBoss: true } // Feb final
+        { name: "Big Boss: The Procrastination Dragon", hp: 500, isBigBoss: true }
     ];
 
     const MONTHLY_THEMES = [
-        { month: 1, theme: "Vitality", attribute: "vitality" }, // January
-        { month: 2, theme: "Agility", attribute: "agility" }, // February
-        { month: 3, theme: "Strength", attribute: "strength" }, // March
-        // ... and so on
+        { month: 1, theme: "Vitality", attribute: "vitality" },
+        { month: 2, theme: "Agility", attribute: "agility" },
+        { month: 3, theme: "Strength", attribute: "strength" },
     ];
 
     const defaultGameData = {
         hero: {
             level: 1,
             xp: 0,
-            stats: {
-                vitality: 1,
-                agility: 1,
-                strength: 1,
-                willpower: 1,
-                intelligence: 1,
-            },
+            stats: { vitality: 1, agility: 1, strength: 1, willpower: 1, intelligence: 1 },
             inventory: {
                 shields: 0,
                 doubleXp: 0,
+                levelUp: 0,
                 boxes: { white: 0, green: 0, blue: 0 }
             }
         },
@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
             name: BOSSES[0].name,
             hp: BOSSES[0].hp
         },
-        lastLogin: null, // YYYY-MM-DD format
+        lastLogin: null,
         loginDaysThisMonth: 0
     };
 
@@ -83,17 +83,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return weekNo;
     }
 
-    function getXpForNextLevel(level) {
-        return level * 100;
-    }
-
-    function getTodayString() {
-        return new Date().toISOString().slice(0, 10);
-    }
-
-    function saveData() {
-        localStorage.setItem('habitQuestData', JSON.stringify(gameData));
-    }
+    function getXpForNextLevel(level) { return level * 100; }
+    function getTodayString() { return new Date().toISOString().slice(0, 10); }
+    function saveData() { localStorage.setItem('habitQuestData', JSON.stringify(gameData)); }
 
     function loadData() {
         const savedData = localStorage.getItem('habitQuestData');
@@ -104,6 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
             gameData.hero.inventory.shields = 10;
             alert('Welcome, new hero! You have received 10 Shields for starting your journey!');
         }
+        if (!gameData.hero.inventory.boxes) gameData.hero.inventory.boxes = { white: 0, green: 0, blue: 0 };
+        if (gameData.hero.inventory.levelUp === undefined) gameData.hero.inventory.levelUp = 0;
         gameData.currentFloor = getWeekNumber(new Date());
     }
 
@@ -114,11 +108,9 @@ document.addEventListener('DOMContentLoaded', () => {
         xpToNextLevelEl.textContent = getXpForNextLevel(hero.level);
         heroShieldsEl.textContent = hero.inventory.shields;
 
-        statVitalityEl.textContent = hero.stats.vitality;
-        statAgilityEl.textContent = hero.stats.agility;
-        statStrengthEl.textContent = hero.stats.strength;
-        statWillpowerEl.textContent = hero.stats.willpower;
-        statIntelligenceEl.textContent = hero.stats.intelligence;
+        for(const stat in hero.stats) {
+            document.getElementById(`stat-${stat}`).textContent = hero.stats[stat];
+        }
 
         bossNameEl.textContent = boss.name;
         bossHpEl.textContent = boss.hp;
@@ -136,6 +128,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dayOfWeek === 3) specialMessage = "It's Critical Hit Day! A random habit may get a surprise boost!";
         if (dayOfWeek === 5) specialMessage = "It's Surprising Day! You've earned a Lucky Box (White)!";
         specialDayInfoEl.textContent = specialMessage;
+
+        boxWhiteCountEl.textContent = hero.inventory.boxes.white;
+        boxGreenCountEl.textContent = hero.inventory.boxes.green;
+        boxBlueCountEl.textContent = hero.inventory.boxes.blue;
+        doubleXpCountEl.textContent = hero.inventory.doubleXp;
+        levelupCountEl.textContent = hero.inventory.levelUp;
     }
     
     function advanceToNextBoss() {
@@ -157,18 +155,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function addBoxToInventory(color, quantity = 1) {
-        if (!gameData.hero.inventory.boxes) {
-            gameData.hero.inventory.boxes = { white: 0, green: 0, blue: 0 };
-        }
         gameData.hero.inventory.boxes[color] += quantity;
-        // In the future, the box opening area UI would be updated here.
     }
 
     function handleDailyLogin() {
         const todayStr = getTodayString();
         if (gameData.lastLogin !== todayStr) {
             gameData.lastLogin = todayStr;
-            gameData.loginDaysThisMonth = (gameData.loginDaysThisMonth || 0) + 1;
             let shieldReward = 1;
             const dayOfWeek = new Date().getDay();
             if (dayOfWeek === 1) {
@@ -179,13 +172,58 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             gameData.hero.inventory.shields += shieldReward;
             
-            if (dayOfWeek === 5 || dayOfWeek === 0) { // Friday or Sunday
+            if (dayOfWeek === 5 || dayOfWeek === 0) {
                 alert("You've earned a Lucky Box (White)!");
                 addBoxToInventory('white', 1);
             }
-
             saveData();
             updateUI();
+        }
+    }
+
+    function openBox(color) {
+        if (gameData.hero.inventory.boxes[color] <= 0) return alert(`You don't have any ${color} boxes!`);
+        gameData.hero.inventory.boxes[color]--;
+        let rewardText = '';
+        if (color === 'white') {
+            const x = Math.random() * 100;
+            if (x < 50) { gameData.hero.inventory.shields++; rewardText = "a Shield!"; }
+            else if (x < 70) { gameData.hero.xp += 5; rewardText = "5 XP!"; }
+            else if (x < 90) { gameData.hero.xp += 10; rewardText = "10 XP!"; }
+            else if (x < 95) { gameData.hero.inventory.doubleXp++; rewardText = "a Double XP token!"; }
+            else { rewardText = "a Real-world Box (White)!"; }
+        } else if (color === 'green') {
+            const x = Math.random() * 100;
+            if (x < 50) { gameData.hero.inventory.shields += 2; rewardText = "2 Shields!"; }
+            else if (x < 80) { gameData.hero.inventory.shields += 3; rewardText = "3 Shields!"; }
+            else if (x < 90) { gameData.hero.inventory.doubleXp++; rewardText = "a Double XP token!"; }
+            else if (x < 95) { rewardText = "a Real-world Box (White)!"; }
+            else { addBoxToInventory('blue', 1); rewardText = "a Level-UP Box (Blue)!"; }
+        } else if (color === 'blue') {
+            gameData.hero.inventory.levelUp++;
+            rewardText = "a Level-UP Token! You can use it to level up instantly.";
+        }
+        alert(`You open a Lucky Box (${color}) and find... ${rewardText}`);
+        saveData();
+        updateUI();
+    }
+    
+    function exchangeForRealWorldBox() {
+        if (gameData.hero.inventory.shields >= 10) {
+            gameData.hero.inventory.shields -= 10;
+            const x = Math.random() * 100;
+            let rewardText = '';
+            if (x < 70) rewardText = "1hr gaming time!";
+            else if (x < 80) rewardText = "2hr gaming time!";
+            else if (x < 85) rewardText = "4hr gaming time!";
+            else if (x < 90) rewardText = "a SPA coupon!";
+            else if (x < 95) rewardText = "a Movie coupon!";
+            else rewardText = "a Massage coupon!";
+            alert(`You exchanged 10 shields and got a Real-world reward: ${rewardText}`);
+            saveData();
+            updateUI();
+        } else {
+            alert("You need at least 10 shields!");
         }
     }
 
@@ -197,7 +235,6 @@ document.addEventListener('DOMContentLoaded', () => {
             { el: habitWillpowerSelect, weight: 7, name: "Will Power", attribute: "willpower" },
             { el: habitIntelligenceSelect, weight: 6, name: "Intelligence", attribute: "intelligence" }
         ];
-
         document.querySelectorAll('.use-shield-cb').forEach((cb, index) => {
             if (cb.checked) {
                 if (gameData.hero.inventory.shields > 0) {
@@ -210,47 +247,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
-        
-        const dayOfWeek = new Date().getDay();
-        if (dayOfWeek === 3) {
+        if (new Date().getDay() === 3) {
             const randomIndex = Math.floor(Math.random() * 5);
             const randomHabit = habitSelections[randomIndex];
-            const currentValue = parseFloat(randomHabit.el.value);
-            if (currentValue > 0) {
-                let newValue = currentValue + 0.5;
+            if (parseFloat(randomHabit.el.value) > 0) {
+                let newValue = parseFloat(randomHabit.el.value) + 0.5;
                 if (newValue > 2.0) newValue = 2.0;
                 randomHabit.el.value = newValue.toString();
                 alert(`Critical Hit! Your ${randomHabit.name} effort was boosted!`);
             }
         }
-
-        const v = parseFloat(habitVitalitySelect.value);
-        const a = parseFloat(habitAgilitySelect.value);
-        const s = parseFloat(habitStrengthSelect.value);
-        const w = parseFloat(habitWillpowerSelect.value);
-        const i = parseFloat(habitIntelligenceSelect.value);
-
-        const damageDealt = (10 * v) + (9 * a) + (8 * s) + (7 * w) + (6 * i);
-        
+        const damageDealt = habitSelections.reduce((acc, habit) => acc + (habit.weight * parseFloat(habit.el.value)), 0);
         gameData.boss.hp -= damageDealt;
         
-        const currentMonth = new Date().getMonth() + 1;
-        const theme = MONTHLY_THEMES.find(t => t.month === currentMonth);
-
-        let xpGained = 0;
-        habitSelections.forEach(habit => {
-            const value = parseFloat(habit.el.value);
-            if (value > 0) {
-                let xp = 5;
-                if (theme && theme.attribute === habit.attribute) {
-                    xp *= 2;
-                }
-                xpGained += xp;
+        const theme = MONTHLY_THEMES.find(t => t.month === (new Date().getMonth() + 1));
+        let xpGained = habitSelections.reduce((acc, habit) => {
+            let xp = 0;
+            if(parseFloat(habit.el.value) > 0) {
+                xp = 5;
+                if (theme && theme.attribute === habit.attribute) xp *= 2;
             }
-        });
+            return acc + xp;
+        }, 0);
         
+        if (xpGained > 0 && gameData.hero.inventory.doubleXp > 0) {
+            if(confirm("You have a Double XP token! Use it now?")) {
+                gameData.hero.inventory.doubleXp--;
+                xpGained *= 2;
+                alert(`XP has been doubled to ${xpGained}!`);
+            }
+        }
         gameData.hero.xp += xpGained;
-
         let xpForNext = getXpForNextLevel(gameData.hero.level);
         while (gameData.hero.xp >= xpForNext) {
             gameData.hero.level++;
@@ -260,12 +287,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         alert(`You dealt ${damageDealt} damage to the boss and gained ${xpGained} XP!`);
-
         if (gameData.boss.hp <= 0) {
             gameData.boss.hp = 0;
             advanceToNextBoss();
         }
-
         saveData();
         updateUI();
     }
@@ -275,7 +300,10 @@ document.addEventListener('DOMContentLoaded', () => {
         handleDailyLogin();
         updateUI();
         commitDayButton.addEventListener('click', handleCommitDay);
+        document.querySelectorAll('.open-box-btn').forEach(btn => {
+            btn.addEventListener('click', () => openBox(btn.dataset.color));
+        });
+        document.getElementById('exchange-real-world-box').addEventListener('click', exchangeForRealWorldBox);
     }
-
     init();
 });

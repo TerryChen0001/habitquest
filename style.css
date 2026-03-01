@@ -79,9 +79,19 @@ button:hover {
     cursor: pointer;
 }
 
-#special-day-info {
-    color: #ffd54f;
-    font-weight: bold;
-    font-style: italic;
-    margin-bottom: 20px;
+#rewards-section .inventory-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 5px;
+    background-color: #333;
+    border-radius: 4px;
+}
+
+#rewards-section button {
+    margin: 0;
+    width: auto;
+    padding: 5px 10px;
+    font-size: 0.9em;
 }
