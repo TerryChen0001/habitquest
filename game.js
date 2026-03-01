@@ -1,66 +1,13 @@
-// This is the correct, final version of game.js as of the latest request.
-
-document.addEventListener('DOMContentLoaded', () => {
-    // --- DOM ELEMENTS ---
-    const heroLevelEl = document.getElementById('hero-level');
-    const heroXpEl = document.getElementById('hero-xp');
-    const xpToNextLevelEl = document.getElementById('xp-to-next-level');
-    const heroShieldsEl = document.getElementById('hero-shields');
-
-    const statVitalityEl = document.getElementById('stat-vitality');
-    const statAgilityEl = document.getElementById('stat-agility');
-    const statStrengthEl = document.getElementById('stat-strength');
-    const statWillpowerEl = document.getElementById('stat-willpower');
-    const statIntelligenceEl = document.getElementById('stat-intelligence');
-
-    const habitVitalitySelect = document.getElementById('habit-vitality');
-    const habitAgilitySelect = document.getElementById('habit-agility');
-    const habitStrengthSelect = document.getElementById('habit-strength');
-    const habitWillpowerSelect = document.getElementById('habit-willpower');
-    const habitIntelligenceSelect = document.getElementById('habit-intelligence');
-
-    const bossNameEl = document.getElementById('boss-name');
-    const bossHpEl = document.getElementById('boss-hp');
-
-    const commitDayButton = document.getElementById('commit-day-button');
-    const specialDayInfoEl = document.getElementById('special-day-info');
-    const floorEl = document.getElementById('floor');
-    const monthlyThemeEl = document.getElementById('monthly-theme');
-    
-    const boxWhiteCountEl = document.getElementById('box-white-count');
-    const boxGreenCountEl = document.getElementById('box-green-count');
-    const boxBlueCountEl = document.getElementById('box-blue-count');
-    const doubleXpCountEl = document.getElementById('double-xp-count');
-    const levelupCountEl = document.getElementById('levelup-count');
-
-    // --- GAME DATA ---
-    let gameData = {};
-
-    // --- CONSTANTS ---
-    const BOSSES = [
-        { name: "Slime of Sloth", hp: 150 },
-        { name: "Goblin of Gluttony", hp: 200 },
-        { name: "Middle Boss: The Doubt Demon", hp: 200, isMiddleBoss: true },
-        { name: "Wraith of Laziness", hp: 300 },
-        { name: "Big Boss: The Procrastination Dragon", hp: 500, isBigBoss: true }
-    ];
-
-    const MONTHLY_THEMES = [
-        { month: 1, theme: "Vitality", attribute: "vitality" },
-        { month: 2, theme: "Agility", attribute: "agility" },
-        { month: 3, theme: "Strength", attribute: "strength" },
-    ];
-
     const defaultGameData = {
         hero: {
             level: 1,
             xp: 0,
             stats: { vitality: 1, agility: 1, strength: 1, willpower: 1, intelligence: 1 },
             inventory: {
-                shields: 0,
+                shields: 20,
                 doubleXp: 0,
                 levelUp: 0,
-                boxes: { white: 0, green: 0, blue: 0 }
+                boxes: { white: 10, green: 0, blue: 0 }
             }
         },
         currentFloor: 1,
@@ -93,10 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
             gameData = JSON.parse(savedData);
         } else {
             gameData = JSON.parse(JSON.stringify(defaultGameData));
-            gameData.hero.inventory.shields = 10;
-            alert('Welcome, new hero! You have received 10 Shields for starting your journey!');
+            alert('Welcome, new hero! You begin your journey with 20 Shields and 10 Lucky Boxes!');
         }
-        if (!gameData.hero.inventory.boxes) gameData.hero.inventory.boxes = { white: 0, green: 0, blue: 0 };
+        if (!gameData.hero.inventory.boxes) gameData.hero.inventory.boxes = { white: 10, green: 0, blue: 0 };
         if (gameData.hero.inventory.levelUp === undefined) gameData.hero.inventory.levelUp = 0;
         gameData.currentFloor = getWeekNumber(new Date());
     }
@@ -235,18 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { el: habitWillpowerSelect, weight: 7, name: "Will Power", attribute: "willpower" },
             { el: habitIntelligenceSelect, weight: 6, name: "Intelligence", attribute: "intelligence" }
         ];
-        document.querySelectorAll('.use-shield-cb').forEach((cb, index) => {
-            if (cb.checked) {
-                if (gameData.hero.inventory.shields > 0) {
-                    gameData.hero.inventory.shields--;
-                    habitSelections[index].el.value = "2.0"; 
-                    cb.checked = false;
-                } else {
-                    alert("You don't have any Shields!");
-                    cb.checked = false;
-                }
-            }
-        });
+
         if (new Date().getDay() === 3) {
             const randomIndex = Math.floor(Math.random() * 5);
             const randomHabit = habitSelections[randomIndex];
