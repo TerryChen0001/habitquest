@@ -8,18 +8,23 @@
 </head>
 <body>
     <h1>HabitQuest</h1>
+    <div id="message-log" class="message-log"></div>
 
     <div class="container">
         <!-- Game Info Section -->
         <div class="section" id="game-info-section">
             <h2>Game Status</h2>
             <p>Floor: <span id="floor">1</span> / 52</p>
-            <p id="monthly-theme">No theme this month.</p>
+            <div class="monthly-challenge-info">
+                <p>Monthly Theme: <span id="monthly-theme">No theme this month.</span></p>
+            </div>
+            <p id="double-xp-active-indicator" style="display: none;">✨ DOUBLE XP ACTIVE! ✨</p>
         </div>
 
         <!-- Hero Section -->
         <div class="section" id="hero-section">
-            <h2>Hero Stats</h2>
+            <h2>Hero: Polar Bear</h2>
+            <img src="images/polar_bear.svg" alt="Polar Bear Avatar" class="avatar">
             <p>Vitality: Lvl <span id="stat-vitality-level">1</span> (<span id="stat-vitality-xp">0/50</span>)</p>
             <p>Agility: Lvl <span id="stat-agility-level">1</span> (<span id="stat-agility-xp">0/50</span>)</p>
             <p>Strength: Lvl <span id="stat-strength-level">1</span> (<span id="stat-strength-xp">0/50</span>)</p>
@@ -116,9 +121,11 @@
             <hr>
             <div class="inventory-item">
                 <span>Double XP Tokens: <span id="double-xp-count">0</span></span>
+                <button id="use-double-xp-token-btn" class="use-token-btn">Use</button>
             </div>
             <div class="inventory-item">
                 <span>Level-UP Tokens: <span id="levelup-count">0</span></span>
+                <button id="use-levelup-token-btn" class="use-token-btn">Use</button>
             </div>
             <hr>
             <button id="exchange-real-world-box">Exchange 10 Shields for Real-world Box</button>
@@ -127,6 +134,7 @@
         <!-- Boss Section -->
         <div class="section" id="boss-section">
             <h2>Current Boss</h2>
+            <img src="images/slime_of_sloth.svg" alt="Boss Avatar" class="avatar" id="boss-avatar">
             <p>Name: <span id="boss-name">Procrastination Dragon</span></p>
             <p>HP: <span id="boss-hp">200</span></p>
         </div>
@@ -134,6 +142,7 @@
         <!-- Weekly Boss Section -->
         <div class="section" id="weekly-boss-section">
             <h2>Weekly Boss</h2>
+            <img src="images/griffin.svg" alt="Weekly Boss Avatar" class="avatar" id="weekly-boss-avatar">
             <p>Name: <span id="weekly-boss-name">Weekly Griffin</span></p>
             <p>HP: <span id="weekly-boss-hp">150</span></p>
             <p>Weakness: <strong id="weekly-boss-weakness">VITALITY</strong></p>

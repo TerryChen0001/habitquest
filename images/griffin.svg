@@ -1,0 +1,16 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="100" height="100" fill="#333"/>
+  <g transform="translate(50,50)">
+    <!-- Griffin Body -->
+    <path d="M-20,0 C-25,-15 -15,-30 0,-30 C15,-30 25,-15 20,0 L0,20 Z" fill="#ffd700" stroke="#daa520" stroke-width="2"/>
+    <!-- Head/Beak -->
+    <path d="M0,-30 L5,-40 Q0,-45 -5,-40 Z" fill="#daa520"/>
+    <!-- Wings -->
+    <path d="M0,-20 C-25,-35 -35,-10 -20,10 L0,-20 Z" fill="#ccc" stroke="#999" stroke-width="1"/>
+    <path d="M0,-20 C25,-35 35,-10 20,10 L0,-20 Z" fill="#ccc" stroke="#999" stroke-width="1"/>
+    <!-- Eyes -->
+    <circle cx="-5" cy="-25" r="2" fill="black"/>
+    <circle cx="5" cy="-25" r="2" fill="black"/>
+  </g>
+  <text x="50" y="90" font-family="Arial" font-size="10" fill="white" text-anchor="middle">Weekly Griffin</text>
+</svg>

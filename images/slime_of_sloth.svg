@@ -1,0 +1,15 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="100" height="100" fill="#333"/>
+  <g transform="translate(50,50)">
+    <!-- Slime Body -->
+    <path d="M0,25 C-20,35 -30,10 -25,-10 C-15,-30 15,-30 25,-10 C30,10 20,35 0,25 Z" fill="#66bb6a" stroke="#4caf50" stroke-width="2"/>
+    <!-- Slime Eyes -->
+    <circle cx="-10" cy="-10" r="5" fill="white"/>
+    <circle cx="10" cy="-10" r="5" fill="white"/>
+    <circle cx="-10" cy="-10" r="2" fill="black"/>
+    <circle cx="10" cy="-10" r="2" fill="black"/>
+    <!-- Slime Mouth -->
+    <path d="M-10,5 Q0,10 10,5" stroke="black" stroke-width="1" fill="none"/>
+  </g>
+  <text x="50" y="90" font-family="Arial" font-size="10" fill="white" text-anchor="middle">Slime of Sloth</text>
+</svg>

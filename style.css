@@ -1,31 +1,82 @@
+* {
+    box-sizing: border-box;
+}
+
 body {
     font-family: 'Courier New', Courier, monospace;
-    background-color: #1a1a1a;
+    background-color: #0d0d0d; /* Deeper dungeon background */
     color: #f0f0f0;
     text-align: center;
     padding: 20px;
+    margin: 0;
+    line-height: 1.6;
 }
 
-h1, h2 {
+h1 {
+    font-size: 2.8em; /* Larger main title */
+    letter-spacing: 2px;
+    margin-bottom: 25px;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
+}
+h2 {
+    font-size: 2em; /* Larger section titles */
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.message-log {
+    background-color: #3b3b3b;
+    border: 1px solid #ffc107;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 20px auto;
+    max-width: 800px;
+    height: 100px; /* Fixed height for scrolling */
+    overflow-y: auto; /* Enable scrolling */
+    text-align: left;
+    font-size: 0.9em;
+    box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+}
+
+.message-log p {
+    margin: 5px 0;
+    color: #e0e0e0;
+}
+
+.message-log p:last-child {
+    font-weight: bold; /* Highlight the most recent message */
     color: #ffc107;
 }
 
 .container {
     display: flex;
-    justify-content: space-around;
+    justify-content: center; /* Center items when they don't fill space */
     flex-wrap: wrap;
-    max-width: 1000px;
-    margin: auto;
+    max-width: 1200px; /* Increased max-width for more space */
+    margin: 20px auto; /* Added vertical margin */
+    gap: 20px; /* Space between flex items */
 }
 
 .section {
-    background-color: #2b2b2b;
-    border: 2px solid #ffc107;
-    border-radius: 8px;
-    padding: 20px;
-    margin: 10px;
-    min-width: 250px;
-    box-shadow: 0 0 15px rgba(255, 193, 7, 0.5);
+    background-color: #202020; /* Slightly darker internal panels */
+    border: 3px double #ffc107; /* Thicker, double border */
+    border-radius: 10px; /* Slightly more rounded corners */
+    padding: 25px;
+    flex: 1 1 300px;
+    box-shadow: 0 5px 20px rgba(255, 193, 7, 0.2), inset 0 0 10px rgba(255, 193, 7, 0.1); /* Enhanced shadow with inner glow */
+    min-height: 220px; /* Slightly more minimum height */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Specific section adjustments */
+#hero-section .avatar {
+    border: 2px solid #f0f0f0;
+    border-radius: 50%;
+    padding: 5px;
+    background-color: #3d3d3d;
 }
 
 .habit {
@@ -35,8 +86,9 @@ h1, h2 {
 
 label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     color: #f0f0f0;
+    font-weight: bold;
 }
 
 select, button {
@@ -44,10 +96,12 @@ select, button {
     padding: 10px;
     border-radius: 5px;
     border: 1px solid #ffc107;
-    background-color: #333;
+    background-color: #383838; /* Slightly lighter for contrast */
     color: #f0f0f0;
     font-family: inherit;
     font-size: 1em;
+    margin-top: 5px; /* Added some top margin for spacing */
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); /* Inner shadow for depth */
 }
 
 button {
@@ -56,42 +110,139 @@ button {
     font-weight: bold;
     cursor: pointer;
     margin-top: 20px;
-    transition: background-color 0.3s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5); /* Lifted button effect */
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 button:hover {
     background-color: #ffd54f;
+    transform: translateY(-3px); /* More pronounced lift */
+    box-shadow: 0 6px 15px rgba(0,0,0,0.6); /* Deeper shadow on hover */
+}
+
+button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* Pressed button effect */
 }
 
 .habit-row {
     display: flex;
     align-items: center;
+    gap: 10px; /* Space between select and potential future elements */
 }
 
 .habit-row select {
     flex-grow: 1;
 }
 
-.use-shield-cb {
-    margin-left: 10px;
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
+/* Specific button styles for opening boxes */
+.open-box-btn {
+    background-color: #7b2cbf; /* Darker purple for boxes */
+    border-color: #9370db;
+    color: #f0f0f0;
+    width: auto; /* Allow button to size itself */
+    padding: 8px 15px;
+    margin: 0; /* Remove default button margin */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5); /* Lifted effect for open box button */
 }
+
+.open-box-btn:hover {
+    background-color: #9c40df;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+}
+
+/* Styling for the new token "Use" buttons */
+.use-token-btn {
+    background-color: #3f51b5; /* A distinct blue */
+    border-color: #7986cb;
+    color: #f0f0f0;
+    width: auto; /* Allow button to size itself */
+    padding: 6px 12px; /* Slightly smaller padding */
+    margin-left: 10px; /* Space from the count */
+    font-size: 0.85em;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
+.use-token-btn:hover {
+    background-color: #5c6bc0;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.6);
+}
+
+#double-xp-active-indicator {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #4CAF50; /* Green color for active status */
+    text-shadow: 0 0 8px rgba(76, 175, 80, 0.8), 0 0 15px rgba(76, 175, 80, 0.6);
+    margin-top: 10px;
+    padding: 5px 10px;
+    border: 1px solid #4CAF50;
+    border-radius: 5px;
+    background-color: rgba(76, 175, 80, 0.1);
+    animation: pulse-glow 1.5s infinite alternate;
+}
+
+@keyframes pulse-glow {
+    from { opacity: 1; text-shadow: 0 0 8px rgba(76, 175, 80, 0.8), 0 0 15px rgba(76, 175, 80, 0.6); }
+    to { opacity: 0.8; text-shadow: 0 0 12px rgba(76, 175, 80, 1), 0 0 20px rgba(76, 175, 80, 0.8); }
+}
+
 
 #rewards-section .inventory-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
-    padding: 5px;
-    background-color: #333;
-    border-radius: 4px;
+    padding: 8px 12px; /* Increased padding */
+    background-color: #3d3d3d; /* Slightly different background */
+    border-radius: 6px;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
 }
 
-#rewards-section button {
-    margin: 0;
-    width: auto;
-    padding: 5px 10px;
-    font-size: 0.9em;
+#rewards-section .inventory-item span {
+    flex-grow: 1; /* Allow text to take available space */
+    text-align: left;
+}
+
+
+.avatar {
+    max-width: 120px; /* Slightly larger avatars */
+    margin: 15px auto; /* Centered with vertical margin */
+    display: block; /* Ensure margin auto works */
+}
+
+hr {
+    border: none;
+    border-top: 1px dashed #ffc107;
+    margin: 20px 0;
+}
+
+.monthly-challenge-info {
+    background-color: #4a148c; /* Dark purple background */
+    border: 1px solid #ce93d8; /* Lighter purple border */
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 15px;
+    box-shadow: 0 0 10px rgba(206, 147, 216, 0.5);
+    font-weight: bold;
+    color: #e0e0e0;
+}
+
+.monthly-challenge-info span {
+    color: #ffd54f; /* Highlight the actual theme */
+    font-size: 1.1em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .section {
+        width: 90%; /* Take more width on smaller screens */
+        max-width: 400px; /* Limit max width for readability */
+    }
 }
