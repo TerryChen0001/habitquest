@@ -1,4 +1,4 @@
-// HabitQuest Game Logic - Phase 3 Complete
+// This is the correct, final version of game.js as of the latest request.
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- DOM ELEMENTS ---
@@ -37,13 +37,13 @@ document.addEventListener('DOMContentLoaded', () => {
         { name: "Middle Boss: The Doubt Demon", hp: 200, isMiddleBoss: true }, // Feb week 2
         { name: "Wraith of Laziness", hp: 300 },
         { name: "Big Boss: The Procrastination Dragon", hp: 500, isBigBoss: true } // Feb final
-        // We can add all 52 floors of bosses here
     ];
 
     const MONTHLY_THEMES = [
         { month: 1, theme: "Vitality", attribute: "vitality" }, // January
         { month: 2, theme: "Agility", attribute: "agility" }, // February
-        // ... and so on for all 12 months
+        { month: 3, theme: "Strength", attribute: "strength" }, // March
+        // ... and so on
     ];
 
     const defaultGameData = {
@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
             inventory: {
                 shields: 0,
                 doubleXp: 0,
+                boxes: { white: 0, green: 0, blue: 0 }
             }
         },
         currentFloor: 1,
@@ -87,26 +88,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getTodayString() {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+        return new Date().toISOString().slice(0, 10);
     }
 
     function saveData() {
         localStorage.setItem('habitQuestData', JSON.stringify(gameData));
-        console.log('Game data saved!');
     }
 
     function loadData() {
         const savedData = localStorage.getItem('habitQuestData');
         if (savedData) {
             gameData = JSON.parse(savedData);
-            console.log('Game data loaded!');
         } else {
-            gameData = JSON.parse(JSON.stringify(defaultGameData)); // Deep copy
-            console.log('No saved data found. Initializing new game.');
+            gameData = JSON.parse(JSON.stringify(defaultGameData));
             gameData.hero.inventory.shields = 10;
             alert('Welcome, new hero! You have received 10 Shields for starting your journey!');
         }
@@ -147,20 +141,28 @@ document.addEventListener('DOMContentLoaded', () => {
     function advanceToNextBoss() {
         gameData.currentBossIndex++;
         if (gameData.currentBossIndex >= BOSSES.length) {
-            alert("You have defeated all the bosses! More will be added soon.");
+            alert("You have defeated all the bosses!");
             gameData.currentBossIndex = BOSSES.length - 1;
         }
         const newBoss = BOSSES[gameData.currentBossIndex];
         gameData.boss.name = newBoss.name;
         gameData.boss.hp = newBoss.hp;
         
-        let reward = "a Green Box";
-        if (newBoss.isMiddleBoss) reward = "a Green Box!";
-        if (newBoss.isBigBoss) reward = "3 Green Boxes!";
-        alert(`A new foe appears! You defeated the boss and earned ${reward}. Now you face the ${newBoss.name}!`);
-        openBox('green', newBoss.isBigBoss ? 3 : 1);
+        let boxColor = 'green';
+        let boxQuantity = 1;
+        if (newBoss.isBigBoss) boxQuantity = 3;
+        
+        alert(`Victory! A new foe appears: ${newBoss.name}! You earned ${boxQuantity} ${boxColor} box(es).`);
+        addBoxToInventory(boxColor, boxQuantity);
     }
 
+    function addBoxToInventory(color, quantity = 1) {
+        if (!gameData.hero.inventory.boxes) {
+            gameData.hero.inventory.boxes = { white: 0, green: 0, blue: 0 };
+        }
+        gameData.hero.inventory.boxes[color] += quantity;
+        // In the future, the box opening area UI would be updated here.
+    }
 
     function handleDailyLogin() {
         const todayStr = getTodayString();
@@ -177,56 +179,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             gameData.hero.inventory.shields += shieldReward;
             
-            if (dayOfWeek === 5) { // Friday
-                openBox('white', 1);
-            }
-            if (dayOfWeek === 0) { // Sunday
-                openBox('white', 1);
+            if (dayOfWeek === 5 || dayOfWeek === 0) { // Friday or Sunday
+                alert("You've earned a Lucky Box (White)!");
+                addBoxToInventory('white', 1);
             }
 
             saveData();
             updateUI();
-        }
-    }
-    
-    function openBox(color, quantity = 1) {
-        for (let i = 0; i < quantity; i++) {
-            let rewardText = '';
-            if (color === 'white') {
-                const x = Math.floor(Math.random() * 100);
-                if (x < 50) {
-                    gameData.hero.inventory.shields++;
-                    rewardText = "a Shield!";
-                } else if (x < 70) {
-                    gameData.hero.xp += 5;
-                    rewardText = "5 XP!";
-                } else if (x < 90) {
-                    gameData.hero.xp += 10;
-                    rewardText = "10 XP!";
-                } else if (x < 95) {
-                    gameData.hero.inventory.doubleXp = (gameData.hero.inventory.doubleXp || 0) + 1;
-                    rewardText = "a Double XP token!";
-                } else {
-                    rewardText = "a Real-world Box (White)!";
-                }
-            } else if (color === 'green') {
-                 const x = Math.floor(Math.random() * 100);
-                if (x < 50) {
-                    gameData.hero.inventory.shields += 2;
-                    rewardText = "2 Shields!";
-                } else if (x < 80) {
-                    gameData.hero.inventory.shields += 3;
-                    rewardText = "3 Shields!";
-                } else if (x < 90) {
-                     gameData.hero.inventory.doubleXp = (gameData.hero.inventory.doubleXp || 0) + 1;
-                    rewardText = "a Double XP token!";
-                } else if (x < 95) {
-                    rewardText = "a Real-world Box (White)!";
-                } else {
-                    rewardText = "a Level-UP Box (Blue)!";
-                }
-            }
-             alert(`You open a Lucky Box (${color}) and find... ${rewardText}`);
         }
     }
 
@@ -247,6 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     cb.checked = false;
                 } else {
                     alert("You don't have any Shields!");
+                    cb.checked = false;
                 }
             }
         });
@@ -274,7 +234,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         gameData.boss.hp -= damageDealt;
         
-        // --- Calculate & Add XP ---
         const currentMonth = new Date().getMonth() + 1;
         const theme = MONTHLY_THEMES.find(t => t.month === currentMonth);
 
@@ -303,7 +262,6 @@ document.addEventListener('DOMContentLoaded', () => {
         alert(`You dealt ${damageDealt} damage to the boss and gained ${xpGained} XP!`);
 
         if (gameData.boss.hp <= 0) {
-            alert(`Victory! You have defeated the ${gameData.boss.name}!`);
             gameData.boss.hp = 0;
             advanceToNextBoss();
         }
