@@ -30,7 +30,7 @@
         return weekNo;
     }
 
-    function getXpForNextLevel(level) { return level * 100; }
+    function getXpForNextLevel(level) { return 50; }
     function getTodayString() { return new Date().toISOString().slice(0, 10); }
     function saveData() { localStorage.setItem('habitQuestData', JSON.stringify(gameData)); }
 
@@ -108,17 +108,11 @@
         const todayStr = getTodayString();
         if (gameData.lastLogin !== todayStr) {
             gameData.lastLogin = todayStr;
-            let shieldReward = 1;
+            gameData.hero.inventory.shields++;
+            alert("Daily Login Bonus! You get 1 shield!");
+
             const dayOfWeek = new Date().getDay();
-            if (dayOfWeek === 1) {
-                shieldReward = 2;
-                alert(`It's Log-in Day! You get ${shieldReward} shields!`);
-            } else {
-                alert(`Daily Login Bonus! You get ${shieldReward} shield!`);
-            }
-            gameData.hero.inventory.shields += shieldReward;
-            
-            if (dayOfWeek === 5 || dayOfWeek === 0) {
+            if (dayOfWeek === 5 || dayOfWeek === 0) { // Friday or Sunday still grant a box
                 alert("You've earned a Lucky Box (White)!");
                 addBoxToInventory('white', 1);
             }
