@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const heroXpEl = document.getElementById('hero-xp');
     const xpToNextLevelEl = document.getElementById('xp-to-next-level');
     const heroShieldsEl = document.getElementById('hero-shields');
-    const heroUnbreakableShieldsEl = document.getElementById('hero-unbreakable-shields');
 
     const statVitalityEl = document.getElementById('stat-vitality');
     const statAgilityEl = document.getElementById('stat-agility');
@@ -60,7 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             inventory: {
                 shields: 0,
-                unbreakableShields: 0,
                 doubleXp: 0,
             }
         },
@@ -109,8 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             gameData = JSON.parse(JSON.stringify(defaultGameData)); // Deep copy
             console.log('No saved data found. Initializing new game.');
-            gameData.hero.inventory.unbreakableShields = 10;
-            alert('Welcome, new hero! You have received 10 Unbreakable Shields for starting your journey!');
+            gameData.hero.inventory.shields = 10;
+            alert('Welcome, new hero! You have received 10 Shields for starting your journey!');
         }
         gameData.currentFloor = getWeekNumber(new Date());
     }
@@ -121,7 +119,6 @@ document.addEventListener('DOMContentLoaded', () => {
         heroXpEl.textContent = hero.xp;
         xpToNextLevelEl.textContent = getXpForNextLevel(hero.level);
         heroShieldsEl.textContent = hero.inventory.shields;
-        heroUnbreakableShieldsEl.textContent = hero.inventory.unbreakableShields;
 
         statVitalityEl.textContent = hero.stats.vitality;
         statAgilityEl.textContent = hero.stats.agility;
@@ -140,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
         monthlyThemeEl.textContent = theme ? `This month's theme: ${theme.theme} (XP * 2)` : "No theme this month.";
         
         let specialMessage = "Today is a normal day.";
+        if (dayOfWeek === 0) specialMessage = "It's Sunday! You've earned a Weekly Lucky Box (White)!";
         if (dayOfWeek === 1) specialMessage = "It's Log-in Day! Rewards are doubled.";
         if (dayOfWeek === 3) specialMessage = "It's Critical Hit Day! A random habit may get a surprise boost!";
         if (dayOfWeek === 5) specialMessage = "It's Surprising Day! You've earned a Lucky Box (White)!";
@@ -179,7 +177,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             gameData.hero.inventory.shields += shieldReward;
             
-            if (dayOfWeek === 5) {
+            if (dayOfWeek === 5) { // Friday
+                openBox('white', 1);
+            }
+            if (dayOfWeek === 0) { // Sunday
                 openBox('white', 1);
             }
 
@@ -240,12 +241,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.querySelectorAll('.use-shield-cb').forEach((cb, index) => {
             if (cb.checked) {
-                if (gameData.hero.inventory.unbreakableShields > 0) {
-                    gameData.hero.inventory.unbreakableShields--;
+                if (gameData.hero.inventory.shields > 0) {
+                    gameData.hero.inventory.shields--;
                     habitSelections[index].el.value = "2.0"; 
                     cb.checked = false;
                 } else {
-                    alert("You don't have any Unbreakable Shields!");
+                    alert("You don't have any Shields!");
                 }
             }
         });
