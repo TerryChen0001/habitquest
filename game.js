@@ -1,17 +1,8 @@
-// This is the correct, final version of game.js as of the latest request.
+// This is the correct, final version of game.js with per-attribute leveling.
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- DOM ELEMENTS ---
-    const heroLevelEl = document.getElementById('hero-level');
-    const heroXpEl = document.getElementById('hero-xp');
-    const xpToNextLevelEl = document.getElementById('xp-to-next-level');
     const heroShieldsInventoryEl = document.getElementById('hero-shields-inventory');
-
-    const statVitalityEl = document.getElementById('stat-vitality');
-    const statAgilityEl = document.getElementById('stat-agility');
-    const statStrengthEl = document.getElementById('stat-strength');
-    const statWillpowerEl = document.getElementById('stat-willpower');
-    const statIntelligenceEl = document.getElementById('stat-intelligence');
 
     const habitVitalitySelect = document.getElementById('habit-vitality');
     const habitAgilitySelect = document.getElementById('habit-agility');
@@ -53,14 +44,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const MONTHLY_THEMES = [
         { month: 1, theme: "Vitality", attribute: "vitality" },
         { month: 2, theme: "Agility", attribute: "agility" },
-        { month: 3, theme: "Strength", attribute: "strength" },
+        { month: 3, theme: "Vitality", attribute: "vitality" }, // March Theme
     ];
 
     const defaultGameData = {
         hero: {
-            level: 1,
-            xp: 0,
-            stats: { vitality: 1, agility: 1, strength: 1, willpower: 1, intelligence: 1 },
+            attributes: {
+                vitality: { level: 1, xp: 0 },
+                agility: { level: 1, xp: 0 },
+                strength: { level: 1, xp: 0 },
+                willpower: { level: 1, xp: 0 },
+                intelligence: { level: 1, xp: 0 },
+            },
             inventory: {
                 shields: 20,
                 doubleXp: 0,
@@ -106,6 +101,10 @@ document.addEventListener('DOMContentLoaded', () => {
             gameData = JSON.parse(JSON.stringify(defaultGameData));
             alert('Welcome, new hero! You begin your journey with 20 Shields and 10 Lucky Boxes!');
         }
+        // Migration for older save files
+        if (!gameData.hero.attributes) { 
+            gameData.hero.attributes = JSON.parse(JSON.stringify(defaultGameData.hero.attributes));
+        }
         if (!gameData.hero.inventory.boxes) gameData.hero.inventory.boxes = { white: 10, green: 0, blue: 0 };
         if (gameData.hero.inventory.levelUp === undefined) gameData.hero.inventory.levelUp = 0;
         if (!gameData.weeklyBoss) gameData.weeklyBoss = JSON.parse(JSON.stringify(defaultGameData.weeklyBoss));
@@ -128,14 +127,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateUI() {
         const { hero, boss, weeklyBoss, currentFloor } = gameData;
-        heroLevelEl.textContent = hero.level;
-        heroXpEl.textContent = hero.xp;
-        xpToNextLevelEl.textContent = getXpForNextLevel(hero.level);
-        heroShieldsInventoryEl.textContent = hero.inventory.shields;
-
-        for(const stat in hero.stats) {
-            document.getElementById(`stat-${stat}`).textContent = hero.stats[stat];
+        
+        for(const attr in hero.attributes) {
+            const attrData = hero.attributes[attr];
+            const xpForNext = getXpForNextLevel(attrData.level);
+            document.getElementById(`stat-${attr}-level`).textContent = attrData.level;
+            document.getElementById(`stat-${attr}-xp`).textContent = `${attrData.xp}/${xpForNext}`;
         }
+        
+        heroShieldsInventoryEl.textContent = hero.inventory.shields;
 
         bossNameEl.textContent = boss.name;
         bossHpEl.textContent = boss.hp;
@@ -218,8 +218,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (color === 'white') {
             const x = Math.random() * 100;
             if (x < 50) { gameData.hero.inventory.shields++; rewardText = "a Shield!"; }
-            else if (x < 70) { gameData.hero.xp += 5; rewardText = "5 XP!"; }
-            else if (x < 90) { gameData.hero.xp += 10; rewardText = "10 XP!"; }
+            else if (x < 70) { addXpToRandomAttr(5); rewardText = "5 XP for a random attribute!"; }
+            else if (x < 90) { addXpToRandomAttr(10); rewardText = "10 XP for a random attribute!"; }
             else if (x < 95) { gameData.hero.inventory.doubleXp++; rewardText = "a Double XP token!"; }
             else { rewardText = "a Real-world Box (White)!"; }
         } else if (color === 'green') {
@@ -231,11 +231,28 @@ document.addEventListener('DOMContentLoaded', () => {
             else { addBoxToInventory('blue', 1); rewardText = "a Level-UP Box (Blue)!"; }
         } else if (color === 'blue') {
             gameData.hero.inventory.levelUp++;
-            rewardText = "a Level-UP Token! You can use it to level up instantly.";
+            rewardText = "a Level-UP Token! You can use it to level up a chosen attribute instantly.";
         }
         alert(`You open a Lucky Box (${color}) and find... ${rewardText}`);
         saveData();
         updateUI();
+    }
+    
+    function addXpToRandomAttr(amount) {
+        const randomAttr = ATTRIBUTES[Math.floor(Math.random() * ATTRIBUTES.length)];
+        addXpToAttribute(randomAttr, amount);
+    }
+
+    function addXpToAttribute(attribute, amount) {
+        const attr = gameData.hero.attributes[attribute];
+        attr.xp += amount;
+        let xpForNext = getXpForNextLevel(attr.level);
+        while (attr.xp >= xpForNext) {
+            attr.level++;
+            attr.xp -= xpForNext;
+            xpForNext = getXpForNextLevel(attr.level);
+            alert(`${attribute.toUpperCase()} has reached Level ${attr.level}!`);
+        }
     }
     
     function exchangeForRealWorldBox() {
@@ -270,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (habit.el.value === 'shield') {
                 if (gameData.hero.inventory.shields > 0) {
                     gameData.hero.inventory.shields--;
-                    habit.el.dataset.value = "2.0"; // temp store value
+                    habit.el.dataset.value = "2.0";
                 } else {
                     alert(`You are out of shields! The ${habit.name} habit will not count.`);
                     habit.el.dataset.value = "0";
@@ -294,9 +311,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let totalDamage = 0;
         let weeklyBossDamage = 0;
+        
         habitSelections.forEach(habit => {
             const value = parseFloat(habit.el.dataset.value);
-            let damage = habit.weight * value;
+            const attrLevel = gameData.hero.attributes[habit.attribute].level;
+            let damage = habit.weight * value * attrLevel; // Damage multiplied by attribute level
             totalDamage += damage;
 
             if (habit.attribute === gameData.weeklyBoss.weakness) {
@@ -312,32 +331,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const theme = MONTHLY_THEMES.find(t => t.month === (new Date().getMonth() + 1));
-        let xpGained = habitSelections.reduce((acc, habit) => {
-            let xp = 0;
-            if(parseFloat(habit.el.dataset.value) > 0) {
-                xp = 5;
-                if (theme && theme.attribute === habit.attribute) xp *= 2;
-            }
-            return acc + xp;
-        }, 0);
         
-        if (xpGained > 0 && gameData.hero.inventory.doubleXp > 0) {
-            if(confirm("You have a Double XP token! Use it now?")) {
-                gameData.hero.inventory.doubleXp--;
-                xpGained *= 2;
-                alert(`XP has been doubled to ${xpGained}!`);
+        habitSelections.forEach(habit => {
+            const value = parseFloat(habit.el.dataset.value);
+            if(value > 0) {
+                let xpGained = 5;
+                if (theme && theme.attribute === habit.attribute) xpGained *= 2;
+                addXpToAttribute(habit.attribute, xpGained);
             }
-        }
-        gameData.hero.xp += xpGained;
-        let xpForNext = getXpForNextLevel(gameData.hero.level);
-        while (gameData.hero.xp >= xpForNext) {
-            gameData.hero.level++;
-            gameData.hero.xp -= xpForNext;
-            xpForNext = getXpForNextLevel(gameData.hero.level);
-            alert(`Congratulations! You've reached Level ${gameData.hero.level}!`);
-        }
+        });
         
-        alert(`You dealt ${totalDamage} damage to the Main Boss and ${weeklyBossDamage} damage to the Weekly Boss. You gained ${xpGained} XP!`);
+        alert(`You dealt ${totalDamage} damage to the Main Boss and ${weeklyBossDamage} damage to the Weekly Boss.`);
         
         if (gameData.boss.hp <= 0) {
             gameData.boss.hp = 0;
@@ -350,7 +354,6 @@ document.addEventListener('DOMContentLoaded', () => {
             addBoxToInventory('green', 1);
         }
         
-        // Reset dropdowns
         habitSelections.forEach(habit => {
             habit.el.value = "0";
         });
